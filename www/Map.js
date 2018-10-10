@@ -1553,7 +1553,7 @@ Map.prototype._onMarkerEvent = function(eventName, markerId, position) {
     marker.trigger(eventName, position, marker);
   }
 };
-
+/*
 Map.prototype._onClusterEvent = function(eventName, markerClusterId, clusterId, position) {
   var self = this;
   var markerCluster = self.OVERLAYS[markerClusterId] || null;
@@ -1561,6 +1561,47 @@ Map.prototype._onClusterEvent = function(eventName, markerClusterId, clusterId, 
     if (/^marker_/i.test(clusterId)) {
       // regular marker
       var marker = markerCluster.getMarkerById(clusterId);
+      if (eventName === event.MARKER_CLICK) {
+        markerCluster.trigger(eventName, position, marker);
+      } else {
+        if (eventName === event.INFO_OPEN) {
+          marker.set("isInfoWindowVisible", true);
+        }
+        if (eventName === event.INFO_CLOSE) {
+          marker.set("isInfoWindowVisible", false);
+        }
+      }
+      marker.trigger(eventName, position, marker);
+    } else {
+      // cluster marker
+      var cluster = markerCluster.getClusterByClusterId(clusterId);
+      if (cluster) {
+        markerCluster.trigger(eventName, cluster);
+      } else {
+        console.log("-----> This is remained cluster icon : " + clusterId);
+      }
+    }
+  }
+};
+*/
+Map.prototype._onClusterEvent = function(eventName, markerClusterId, clusterId, position) {
+  var self = this;
+  var markerCluster = self.OVERLAYS[markerClusterId] || null;
+  if (markerCluster) {
+
+    // markers not recognized if id without prefix 'marker_' is given in addMarkerCluster
+    var markerx = markerCluster.getMarkerById(clusterId);
+
+    if (markerx || /^marker_/i.test(clusterId)) {
+      // regular marker
+      var marker = markerCluster.getMarkerById(clusterId);
+
+      // click on marker when using markerCluster is firing 'cluster_click', not 'marker_click'
+      if (eventName === 'cluster_click') {
+        console.log("!!!! CLUSTER_CLICK !!!!")
+        eventName = event.MARKER_CLICK;
+      }
+
       if (eventName === event.MARKER_CLICK) {
         markerCluster.trigger(eventName, position, marker);
       } else {
